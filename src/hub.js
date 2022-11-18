@@ -208,6 +208,17 @@ if (isEmbed && !qs.get("embed_token")) {
   throw new Error("no embed token");
 }
 
+
+import {ftrKeypadClass} from  "./metaoffice/ftr_keypad.js"
+
+window.role = "guest";
+if(qs.has("role"))
+	window.role = qs.get("role")
+
+window.listFeatures = [];
+
+
+
 import "./components/owned-object-limiter";
 import "./components/owned-object-cleanup-timeout";
 import "./components/set-unowned-body-kinematic";
@@ -1369,4 +1380,43 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   authChannel.setSocket(socket);
   linkChannel.setSocket(socket);
+
+
+
+  if(qs.has("keypad")) {
+		let ftrKeypad = new ftrKeypadClass();
+		ftrKeypad.init();
+		window.listFeatures.push( ftrKeypad );
+
+
+    let updatePointer = () => {
+      ftrKeypad.pointer.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+      ftrKeypad.pointer.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+    }
+
+	  let updateScreenText = () => {
+      if(ftrKeypad.toAdd === "")
+        return;
+
+      if(ftrKeypad.screen.children[0].components.text.troikaTextMesh.text.length > 3)
+        ftrKeypad.screen.children[0].components.text.troikaTextMesh.text = ""
+
+      ftrKeypad.screen.children[0].components.text.troikaTextMesh.text =
+      ftrKeypad.screen.children[0].components.text.troikaTextMesh.text + ftrKeypad.toAdd;
+
+    }
+    document.addEventListener( 'mousemove', updatePointer );
+    document.addEventListener( 'mousedown', updateScreenText );
+
+	}
+
+
+
+	// The big Loop, 
+	setInterval(() => {
+		window.listFeatures.forEach( _ftr => _ftr.tick() )
+	}, 60); // Should be a tick in AFRAME
+
+
+
 });

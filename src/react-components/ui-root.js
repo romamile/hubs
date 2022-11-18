@@ -50,7 +50,7 @@ import { MicSetupModalContainer } from "./room/MicSetupModalContainer";
 import { InvitePopoverContainer } from "./room/InvitePopoverContainer";
 import { MoreMenuPopoverButton, CompactMoreMenuButton, MoreMenuContextProvider } from "./room/MoreMenuPopover";
 import { ChatSidebarContainer, ChatContextProvider, ChatToolbarButtonContainer } from "./room/ChatSidebarContainer";
-import { ContentMenu, PeopleMenuButton, ObjectsMenuButton, ECSDebugMenuButton } from "./room/ContentMenu";
+import { ContentMenu, PeopleMenuButton, ObjectsMenuButton, ChatMenuButton, ECSDebugMenuButton } from "./room/ContentMenu";
 import { ReactComponent as CameraIcon } from "./icons/Camera.svg";
 import { ReactComponent as AvatarIcon } from "./icons/Avatar.svg";
 import { ReactComponent as AddIcon } from "./icons/Add.svg";
@@ -1113,7 +1113,7 @@ class UIRoot extends Component {
                 icon: EnterIcon,
                 onClick: () => this.showContextualSignInDialog()
               },
-          canCreateRoom && {
+          false && canCreateRoom && {
             id: "create-room",
             label: <FormattedMessage id="more-menu.create-room" defaultMessage="Create Room" />,
             icon: AddIcon,
@@ -1129,7 +1129,7 @@ class UIRoot extends Component {
             icon: AvatarIcon,
             onClick: () => this.setSidebar("profile")
           },
-          {
+          false && {
             id: "favorite-rooms",
             label: <FormattedMessage id="more-menu.favorite-rooms" defaultMessage="Favorite Rooms" />,
             icon: FavoritesIcon,
@@ -1151,7 +1151,7 @@ class UIRoot extends Component {
           }
         ].filter(item => item)
       },
-      {
+      window.role == "admin" ? {
         id: "room",
         label: <FormattedMessage id="more-menu.room" defaultMessage="Room" />,
         items: [
@@ -1161,7 +1161,7 @@ class UIRoot extends Component {
             icon: HomeIcon,
             onClick: () => this.setSidebar("room-info")
           },
-          (this.props.breakpoint === "sm" || this.props.breakpoint === "md") &&
+          false && (this.props.breakpoint === "sm" || this.props.breakpoint === "md") &&
             (this.props.hub.entry_mode !== "invite" || this.props.hubChannel.can("update_hub")) && {
               id: "invite",
               label: <FormattedMessage id="more-menu.invite" defaultMessage="Invite" />,
@@ -1169,13 +1169,13 @@ class UIRoot extends Component {
               onClick: () => this.props.scene.emit("action_invite")
             },
           this.isFavorited()
-            ? {
+            ? false && {
                 id: "unfavorite-room",
                 label: <FormattedMessage id="more-menu.unfavorite-room" defaultMessage="Unfavorite Room" />,
                 icon: StarIcon,
                 onClick: () => this.toggleFavorited()
               }
-            : {
+            : false && {
                 id: "favorite-room",
                 label: <FormattedMessage id="more-menu.favorite-room" defaultMessage="Favorite Room" />,
                 icon: StarOutlineIcon,
@@ -1192,7 +1192,7 @@ class UIRoot extends Component {
               icon: CameraIcon,
               onClick: () => this.toggleStreamerMode()
             },
-          (this.props.breakpoint === "sm" || this.props.breakpoint === "md") &&
+          false && (this.props.breakpoint === "sm" || this.props.breakpoint === "md") &&
             entered && {
               id: "leave-room",
               label: <FormattedMessage id="more-menu.enter-leave-room" defaultMessage="Leave Room" />,
@@ -1204,7 +1204,7 @@ class UIRoot extends Component {
                 });
               }
             },
-          canCloseRoom && {
+          false && canCloseRoom && {
             id: "close-room",
             label: <FormattedMessage id="more-menu.close-room" defaultMessage="Close Room" />,
             icon: DeleteIcon,
@@ -1223,7 +1223,13 @@ class UIRoot extends Component {
               )
           }
         ].filter(item => item)
-      },
+      } :
+			{
+        id: "room",
+        items: [
+        ].filter(item => item)
+			}
+			,
       {
         id: "support",
         label: <FormattedMessage id="more-menu.support" defaultMessage="Support" />,
@@ -1240,7 +1246,7 @@ class UIRoot extends Component {
             icon: WarningCircleIcon,
             href: configs.link("issue_report", "https://hubs.mozilla.com/docs/help.html")
           },
-          entered && {
+          false && entered && {
             id: "start-tour",
             label: <FormattedMessage id="more-menu.start-tour" defaultMessage="Start Tour" />,
             icon: SupportIcon,
@@ -1280,9 +1286,196 @@ class UIRoot extends Component {
       }
     ];
 
+
+    // 2) Ready Player Me Avatar creation
+
+/*
+    const iframeUrl = 'https://activereplica.readyplayer.me'
+    let iFrameShowing = false;
+  
+    function receiveMessage(event) {
+			console.log(event);
+      if (event.data.name == 'returnuser' || event.data.name == 'checkuser')
+        return;
+
+      // Get URL to avatar
+      const url = event.data
+      console.log(`Avatar URL: ${url}`)
+
+      if (typeof url === 'string' || url instanceof String) {
+        const store = window.APP.store;
+        //store.state.profile.avatarId = proxiedUrlFor(url);
+        store.update({profile: { avatarId: url } }, null, "profile");
+        AFRAME.scenes[0].emit("avatar_updated");
+      }
+     
+      iFrameShowing = false;
+      deleteIframe();
+    }
+    window.addEventListener('message', receiveMessage, false)
+  
+    function loadIframe() {
+      document.getElementById("containerRPM").style.display = "block";
+      let iframe = document.getElementById('iframe')
+    
+      if (!iframe) {
+        iframe = document.createElement('iframe')
+        document.querySelector('.container').appendChild(iframe)
+      }
+
+      iframe.id = 'iframeRPM'
+      iframe.src = iframeUrl
+      iframe.className = 'contentRPM'
+      iframe.allow = 'camera *; microphone *'
+    }
+  
+
+    function deleteIframe() {
+      document.getElementById("containerRPM").style.display = "none";
+      //let myObj = document.getElementById("iframeRPM")
+      //myObj.remove();
+    }
+  
+    window.handleRPM = function() {
+      if(iFrameShowing) {
+        iFrameShowing = false;
+        //deleteIframe();
+      } else {
+        iFrameShowing = true;
+        loadIframe();
+      }
+    }
+*/
+   let iframe
+    
+		// API
+		function subscribe(event) {
+			const json = parse(event);
+
+			if (json?.source !== 'readyplayerme') {
+				return;
+			}
+
+			if(json.eventName === "v1.avatar.exported") {
+				// Get name of glb
+				console.log(json.data.url)
+        const store = window.APP.store;
+        store.update({profile: { avatarId: json.data.url } }, null, "profile");
+        AFRAME.scenes[0].emit("avatar_updated");
+
+				window.closeRPM();
+			}
+
+			
+			// Susbribe to all events sent from Ready Player Me once frame is ready
+			if (json.eventName === 'v1.frame.ready') {
+				iframe.contentWindow.postMessage(
+					JSON.stringify({
+						target: 'readyplayerme',
+						type: 'subscribe',
+						eventName: 'v1.**'
+					}),
+					'*'
+				);
+			}
+
+
+
+		}
+
+		function parse(event) {
+			try {
+				return JSON.parse(event.data);
+			} catch (error) {
+				return null;
+			}
+		}
+
+		function displayIframe() {
+			document.getElementById('containerRPM').hidden = false;
+		}
+
+
+		// ME
+		
+		window.openRPM = () => {
+							
+			const subdomain = 'demo';
+			//const frame = document.getElementById('frame');
+			//frame.src = `https://${subdomain}.readyplayer.me/avatar?frameApi`;
+
+			document.getElementById("containerRPM").style.display = "block";
+			iframe = document.getElementById('iframeRPM')
+	 
+			if (!iframe) {
+				iframe = document.createElement('iframe')
+				document.getElementById("containerRPM").appendChild(iframe)
+			}
+
+			iframe.id = 'iframeRPM'
+			iframe.src = `https://${subdomain}.readyplayer.me/avatar?frameApi`
+			iframe.className = 'contentRPM'
+			iframe.allow = 'camera *; microphone *'
+			
+			window.addEventListener('message', subscribe);
+			document.addEventListener('message', subscribe);
+
+		}
+		
+		window.closeRPM = () => {
+				document.getElementById('containerRPM').hidden = !document.getElementById('containerRPM').hidden;
+			
+				window.removeEventListener("message", subscribe)
+				document.removeEventListener("message", subscribe)
+				document.getElementById("iframeRPM").remove();
+			
+		}
+
+
+	  // romamilend
+
     return (
       <MoreMenuContextProvider>
         <ReactAudioContext.Provider value={this.state.audioContext}>
+          <div className="container" id="containerRPM" style={{ "display":"none","pointerEvents": "auto", "userSelect": "none", "width":"40%", "height":"60%"}}></div>
+
+              <div className="bottomLeftMenu">
+                {entered && (
+                  <>
+                   	<MoreMenuPopoverButton style={{marginLeft: "10px"}} menu={moreMenu} />
+                    <AudioPopoverContainer scene={this.props.scene} />
+                    {(window.role === "admin" || window.role === "speaker") && (
+											<>
+												<SharePopoverContainer scene={this.props.scene} hubChannel={this.props.hubChannel} />
+												<PlacePopoverContainer
+													scene={this.props.scene}
+													hubChannel={this.props.hubChannel}
+													mediaSearchStore={this.props.mediaSearchStore}
+													showNonHistoriedDialog={this.showNonHistoriedDialog}
+													isOwner={this.props.presences[this.props.sessionId].metas[0].roles.owner}
+												/>
+											</>
+										)}
+                    {this.props.hubChannel.can("spawn_emoji") && ( 
+                          <ReactionPopoverContainer
+                            scene={this.props.scene}
+                            initialPresence={getPresenceProfileForSession(this.props.presences, this.props.sessionId)}
+                          />
+										)}
+                  </>
+                )}
+                {entered && isMobileVR && (
+                    <ToolbarButton
+                      className={styleUtils.hideLg}
+                      icon={<VRIcon />}
+                      preset="accept"
+                      label={<FormattedMessage id="toolbar.enter-vr-button" defaultMessage="Enter VR" />}
+                      onClick={() => exit2DInterstitialAndEnterVR(true)}
+                    />
+                )}
+              </div>
+
+
           <div className={classNames(rootStyles)}>
             {preload && this.props.hub && (
               <PreloadOverlay
@@ -1356,7 +1549,7 @@ class UIRoot extends Component {
                     {(!this.props.selectedObject ||
                       (this.props.breakpoint !== "sm" && this.props.breakpoint !== "md")) && (
                       <ContentMenu>
-                        {showObjectList && (
+                        {(window.role === "admin" || window.role === "speaker") && showObjectList && (
                           <ObjectsMenuButton
                             active={this.state.sidebarId === "objects"}
                             onClick={() => this.toggleSidebar("objects")}
@@ -1366,6 +1559,11 @@ class UIRoot extends Component {
                           active={this.state.sidebarId === "people"}
                           onClick={() => this.toggleSidebar("people")}
                           presencecount={this.state.presenceCount}
+                        />
+                        <ChatMenuButton
+                          id="chatMenuButton"
+                          active={this.state.sidebarId === "chat"}
+                          onClick={() => this.toggleSidebar("chat")}
                         />
                         {showECSObjectsMenuButton && (
                           <ECSDebugMenuButton
