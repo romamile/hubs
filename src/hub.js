@@ -1390,8 +1390,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
     let updatePointer = () => {
-      ftrKeypad.pointer.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-      ftrKeypad.pointer.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+      //ftrKeypad.pointer.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+      //ftrKeypad.pointer.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+      ftrKeypad.pointer.x = ( event.clientX / document.getElementsByTagName("canvas")[0].offsetWidth) * 2 - 1;
+      ftrKeypad.pointer.y = - ( event.clientY / document.getElementsByTagName("canvas")[0].offsetHeight ) * 2 + 1;
     }
 
 	  let updateScreenText = () => {

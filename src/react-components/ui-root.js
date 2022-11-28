@@ -1545,7 +1545,7 @@ class UIRoot extends Component {
                 viewport={
                   <>
                     {!this.state.dialog && renderEntryFlow ? entryDialog : undefined}
-                    {!this.props.selectedObject && <CompactMoreMenuButton />}
+                    {false && !this.props.selectedObject && <CompactMoreMenuButton />}
                     {(!this.props.selectedObject ||
                       (this.props.breakpoint !== "sm" && this.props.breakpoint !== "md")) && (
                       <ContentMenu>
@@ -1799,7 +1799,7 @@ class UIRoot extends Component {
                         }}
                       />
                     )}
-                    <MoreMenuPopoverButton menu={moreMenu} />
+                    {false && ( <MoreMenuPopoverButton menu={moreMenu} />)}
                   </>
                 }
               />

@@ -52,7 +52,7 @@ export function RoomEntryModal({
               </span>
             </Button>
           )}
-          {showEnterOnDevice && (
+          {false && showEnterOnDevice && (
             <Button preset="accent5" onClick={onEnterOnDevice}>
               <VRIcon />
               <span>
@@ -60,7 +60,7 @@ export function RoomEntryModal({
               </span>
             </Button>
           )}
-          {showSpectate && (
+          {false && showSpectate && (
             <Button preset="accent2" onClick={onSpectate}>
               <ShowIcon />
               <span>
