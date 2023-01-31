@@ -36,7 +36,35 @@
   margin: 5px;
 }
 
+.overlay {
+  display: none; /* Default Hidden */
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 10;
+  background-color: rgba(0,0,0,0.6);
+  height: 100%;
+  width: 100%;
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  -khtml-user-select: none;
+  -o-user-select: none;
+  user-drag: none;
+  -webkit-user-drag: none;
+
+ pointer-events: auto;
+} 
+
 .contentRPM {
+  margin-top: 10px;
+  border: none;
+  width: 100%;
+  height: calc(100%);
+}
+
+.contentNftShop {
   margin-top: 10px;
   border: none;
   width: 100%;
@@ -46,6 +74,13 @@
 .container {
   margin-top: 100px;
   margin: auto;
+  z-index: 11;
+}
+
+.containerNftShop {
+  margin-top: 100px;
+  margin: auto;
+  z-index: 11;
 }
 
 .content {

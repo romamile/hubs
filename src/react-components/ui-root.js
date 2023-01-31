@@ -1289,63 +1289,6 @@ class UIRoot extends Component {
 
     // 2) Ready Player Me Avatar creation
 
-/*
-    const iframeUrl = 'https://activereplica.readyplayer.me'
-    let iFrameShowing = false;
-  
-    function receiveMessage(event) {
-			console.log(event);
-      if (event.data.name == 'returnuser' || event.data.name == 'checkuser')
-        return;
-
-      // Get URL to avatar
-      const url = event.data
-      console.log(`Avatar URL: ${url}`)
-
-      if (typeof url === 'string' || url instanceof String) {
-        const store = window.APP.store;
-        //store.state.profile.avatarId = proxiedUrlFor(url);
-        store.update({profile: { avatarId: url } }, null, "profile");
-        AFRAME.scenes[0].emit("avatar_updated");
-      }
-     
-      iFrameShowing = false;
-      deleteIframe();
-    }
-    window.addEventListener('message', receiveMessage, false)
-  
-    function loadIframe() {
-      document.getElementById("containerRPM").style.display = "block";
-      let iframe = document.getElementById('iframe')
-    
-      if (!iframe) {
-        iframe = document.createElement('iframe')
-        document.querySelector('.container').appendChild(iframe)
-      }
-
-      iframe.id = 'iframeRPM'
-      iframe.src = iframeUrl
-      iframe.className = 'contentRPM'
-      iframe.allow = 'camera *; microphone *'
-    }
-  
-
-    function deleteIframe() {
-      document.getElementById("containerRPM").style.display = "none";
-      //let myObj = document.getElementById("iframeRPM")
-      //myObj.remove();
-    }
-  
-    window.handleRPM = function() {
-      if(iFrameShowing) {
-        iFrameShowing = false;
-        //deleteIframe();
-      } else {
-        iFrameShowing = true;
-        loadIframe();
-      }
-    }
-*/
    let iframe
     
 		// API
@@ -1358,7 +1301,7 @@ class UIRoot extends Component {
 
 			if(json.eventName === "v1.avatar.exported") {
 				// Get name of glb
-				console.log(json.data.url)
+				//console.log(json.data.url)
         const store = window.APP.store;
         store.update({profile: { avatarId: json.data.url } }, null, "profile");
         AFRAME.scenes[0].emit("avatar_updated");
@@ -1396,10 +1339,91 @@ class UIRoot extends Component {
 		}
 
 
+   let iframeNftShop;
+
+		window.openNftShop = () => {
+
+ 			if(window.isNftShopOpen)
+				return;
+
+			if(isMobileVR) {
+
+        AFRAME.scenes[0].exitVR().then(() => {
+					/*
+			if (!nonFullscreen) {
+				await getUserGesture();
+				await showFullScreenIfAvailable();
+			}
+	*/
+					document.getElementById('overlayForCenter').style.display = "block";
+
+					document.getElementById('containerNftShop').style.display = "block";
+
+					//document.getElementById("containerNftShop").style.display = "hidden";
+					iframeNftShop = document.getElementById('iframeNftShop')
+			 
+					if (!iframeNftShop) {
+						iframeNftShop = document.createElement('iframe')
+						document.getElementById("containerNftShop").appendChild(iframeNftShop)
+					}
+
+					iframeNftShop.id = 'iframeNftShop'
+					iframeNftShop.src = `https://vendormachine.ispd-metaoffice.com`
+					iframeNftShop.className = 'contentNftShop'
+
+ 					window.isNftShopOpen = true;
+				});
+
+
+			} else {
+
+				document.getElementById('overlayForCenter').style.display = "block";
+
+				document.getElementById('containerNftShop').style.display = "block";
+
+				//document.getElementById("containerNftShop").style.display = "hidden";
+				iframeNftShop = document.getElementById('iframeNftShop')
+		 
+				if (!iframeNftShop) {
+					iframeNftShop = document.createElement('iframe')
+					document.getElementById("containerNftShop").appendChild(iframeNftShop)
+				}
+
+				iframeNftShop.id = 'iframeNftShop'
+				iframeNftShop.src = `https://vendormachine.ispd-metaoffice.com`
+				iframeNftShop.className = 'contentNftShop'
+
+ 				window.isNftShopOpen = true;
+
+			}
+
+		}
+
+		window.closeNftShop = () => {
+
+ 			if(!window.isNftShopOpen)
+				return;
+
+			document.getElementById('overlayForCenter').style.display = "none";
+      if(document.getElementById('iframeNftShop') === null)
+        return;
+			document.getElementById('containerNftShop').style.display = "none";
+			document.getElementById("iframeNftShop").remove();
+
+ 			window.isNftShopOpen = false;
+
+			if(isMobileVR) {
+      	exit2DInterstitialAndEnterVR(true);
+			}
+
+		}
+
 		// ME
 		
 		window.openRPM = () => {
 							
+			document.getElementById('overlayForCenter').style.display = "block";
+
 			const subdomain = 'demo';
 			//const frame = document.getElementById('frame');
 			//frame.src = `https://${subdomain}.readyplayer.me/avatar?frameApi`;
@@ -1423,13 +1447,22 @@ class UIRoot extends Component {
 		}
 		
 		window.closeRPM = () => {
-				document.getElementById('containerRPM').hidden = !document.getElementById('containerRPM').hidden;
-			
-				window.removeEventListener("message", subscribe)
-				document.removeEventListener("message", subscribe)
-				document.getElementById("iframeRPM").remove();
+			document.getElementById('overlayForCenter').style.display = "none";
+      if(document.getElementById('iframeRPM') === null)
+        return;
+      document.getElementById('containerRPM').style.display = "none";
+    
+      window.removeEventListener("message", subscribe)
+      document.removeEventListener("message", subscribe)
+      document.getElementById("iframeRPM").remove();
 			
 		}
+
+
+    window.closeAll = () => {
+      window.closeRPM();
+      window.closeNftShop();
+    }
 
 
 	  // romamilend
@@ -1437,7 +1470,10 @@ class UIRoot extends Component {
     return (
       <MoreMenuContextProvider>
         <ReactAudioContext.Provider value={this.state.audioContext}>
+          <div className="container" id="containerNftShop" style={{ "display":"none","pointerEvents": "auto", "userSelect": "none", "width":"50%", "height":"100%"}}></div>
           <div className="container" id="containerRPM" style={{ "display":"none","pointerEvents": "auto", "userSelect": "none", "width":"40%", "height":"60%"}}></div>
+
+            <div id="overlayForCenter" class="overlay" onClick={() => window.closeAll()}></div>
 
               <div className="bottomLeftMenu">
                 {entered && (
@@ -1462,16 +1498,16 @@ class UIRoot extends Component {
                             initialPresence={getPresenceProfileForSession(this.props.presences, this.props.sessionId)}
                           />
 										)}
+
+										{isMobileVR && (
+												<ToolbarButton
+													icon={<VRIcon />}
+													preset="accept"
+													label={<FormattedMessage id="toolbar.enter-vr-button" defaultMessage="Enter VR" />}
+													onClick={() => exit2DInterstitialAndEnterVR(true)}
+												/>
+										)}
                   </>
-                )}
-                {entered && isMobileVR && (
-                    <ToolbarButton
-                      className={styleUtils.hideLg}
-                      icon={<VRIcon />}
-                      preset="accept"
-                      label={<FormattedMessage id="toolbar.enter-vr-button" defaultMessage="Enter VR" />}
-                      onClick={() => exit2DInterstitialAndEnterVR(true)}
-                    />
                 )}
               </div>
 
