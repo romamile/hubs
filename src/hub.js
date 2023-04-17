@@ -11,6 +11,7 @@ import "./utils/theme";
 import "core-js/stable";
 import "regenerator-runtime/runtime";
 
+
 console.log(
   `App version: ${
     configs.IS_LOCAL_OR_CUSTOM_CLIENT
